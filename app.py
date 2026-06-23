@@ -21,9 +21,10 @@ st.write("Upload an image and let our AI find the hottest matching products from
 
 @st.cache_resource
 def load_engine():
-    return ShopEngine('catalog.index', 'embeddings.pkl')
+    # Ensure these file names match the exact artifacts in your repository root
+    return ShopEngine('catalog.index', 'embeddings.pkl', 'catalog_hashes.pkl')
 
-if os.path.exists('catalog.index'):
+if os.path.exists('catalog.index') and os.path.exists('embeddings.pkl') and os.path.exists('catalog_hashes.pkl'):
     engine = load_engine()
     with st.sidebar:
         st.header("Configuration")
@@ -40,16 +41,18 @@ if os.path.exists('catalog.index'):
             with st.spinner('Curating matches...'):
                 results = engine.detect_products(image, top_k=top_k)
                 if not results:
-                    st.warning("No specific products found.")
+                    st.warning("No specific fashion products found. Try another image!")
                 else:
                     for idx, res in enumerate(results):
                         with st.container():
                             st.markdown(f'<div class="product-card">', unsafe_allow_html=True)
                             col_info, col_m1, col_m2, col_m3 = st.columns([1.5, 2, 2, 2])
+                            
                             with col_info:
                                 st.image(res['crop'], use_container_width=True)
                                 st.write(f"**Detected:** {res['label'].title()}")
                                 st.write(f"*Confidence:* {res['conf']:.1%}")
+                            
                             match_cols = [col_m1, col_m2, col_m3]
                             for i, match in enumerate(res['matches'][:3]):
                                 with match_cols[i]:
@@ -59,4 +62,4 @@ if os.path.exists('catalog.index'):
                                     st.button('View Details', key=f'view_{idx}_{i}')
                             st.markdown('</div>', unsafe_allow_html=True)
 else:
-    st.error("System artifacts missing.")
+    st.error("System artifacts missing. Please ensure 'catalog.index', 'embeddings.pkl', and 'catalog_hashes.pkl' are uploaded and tracked via Git LFS in the root directory.")

@@ -13,6 +13,8 @@ class SigLIPEmbedder:
     def get_embedding(self, image):
         if isinstance(image, str):
             image = Image.open(image).convert("RGB")
+        else:
+            image = image.convert("RGB")
         
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)
         with torch.no_grad():
